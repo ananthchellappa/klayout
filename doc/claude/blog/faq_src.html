@@ -1,0 +1,177 @@
+<div class="wrap">
+
+<p class="lede">Notes from building KLayout 0.30.12 from source on Ubuntu 26.04 (WSL2) with Qt 6, on the way to an open-source schematic-driven layout flow with Xschem. Every answer below was checked against the source tree or a real build in October 2026. Where I compare with Cadence Virtuoso, the point is how the tool <em>feels</em> to use, not what it can or can't do.</p>
+
+<div class="toc">
+<p class="toctitle">Contents</p>
+<p class="tocgroup">Building and the repo</p>
+<ol start="1">
+<li><a href="#q1">What do I need to install to build KLayout?</a></li>
+<li><a href="#q2">How big is the code base?</a></li>
+<li><a href="#q3">Should I run Doxygen on it?</a></li>
+<li><a href="#q4">"error while loading shared libraries: libklayout_tl.so.0"</a></li>
+<li><a href="#q5">Why is my checkout 2 GB after building?</a></li>
+</ol>
+<p class="tocgroup">Setup and customisation</p>
+<ol start="6">
+<li><a href="#q6">A black background like Virtuoso, set once</a></li>
+<li><a href="#q7">Custom keyboard shortcuts in an init file</a></li>
+<li><a href="#q8">R and C parasitic extraction like Magic?</a></li>
+</ol>
+<p class="tocgroup">Analog flow and sky130</p>
+<ol start="9">
+<li><a href="#q9">Is there an Xschem ↔ KLayout cross-probe?</a></li>
+<li><a href="#q10">sky130 layout in KLayout when you already use sky130 in Xschem</a></li>
+</ol>
+<p class="tocgroup">UI/UX compared with Cadence Virtuoso</p>
+<ol start="11">
+<li><a href="#q11">Is there a CIW that logs commands?</a></li>
+<li><a href="#q12">Is there a Library Manager?</a></li>
+<li><a href="#q13">Two layouts in two windows on two monitors?</a></li>
+<li><a href="#q14">What is the command language?</a></li>
+<li><a href="#q15">What is the zoom-fit shortcut?</a></li>
+</ol>
+</div>
+
+<h2>Building and the repo</h2>
+
+<h3 id="q1"><span class="num">1</span>What do I need to install to build KLayout?</h3>
+<p>On a recent Ubuntu with Qt 6, you need a compiler, Qt 6 development packages, and Ruby and Python headers. Ruby matters because KLayout's DRC and LVS engines are written in Ruby, so they're only built when Ruby is present.</p>
+<pre>sudo apt install build-essential git ccache python3-dev ruby-dev zlib1g-dev \
+  qt6-base-dev qt6-tools-dev qt6-5compat-dev qt6-svg-dev qt6-multimedia-dev \
+  libgit2-dev libcurl4-openssl-dev</pre>
+<p><code>qt6-5compat-dev</code> is the one that's easy to miss. The Qt 6 build needs it whenever the Qt bindings for scripts are enabled, which is the default. <code>libgit2-dev</code> and <code>libcurl4-openssl-dev</code> are optional. Ubuntu's Qt 6 has no plain <code>qmake</code>, so name it explicitly:</p>
+<pre>./build.sh -qmake qmake6 -rpath $HOME/dev/klayout/bin-release -j8</pre>
+<div class="tip"><strong>Tip:</strong> watch your RAM. The generated Qt bindings are memory-hungry to compile, so on a 16 GB machine I used <code>-j8</code> rather than all 20 cores. Prefix the command with <code>QMAKE_CCACHE=1</code> for faster rebuilds.</div>
+
+<h3 id="q2"><span class="num">2</span>How big is the code base?</h3>
+<p>About <strong>3.2 million lines of C++</strong>. Roughly 2.2 million of those are auto-generated Qt bindings (<code>src/gsiqt</code>), which is why that part of the build seems to take forever. The hand-written code is about 1 million lines:</p>
+<table>
+<tr><th>Module</th><th>What it is</th><th>Lines</th></tr>
+<tr><td><code>db</code></td><td>Layout database, geometry engine, netlist extraction and LVS core</td><td>~255k</td></tr>
+<tr><td><code>laybasic</code></td><td>View and rendering core</td><td>~196k</td></tr>
+<tr><td><code>plugins</code></td><td>File formats (GDS2, OASIS, LEF/DEF, DXF, …) and tools</td><td>~144k</td></tr>
+<tr><td>unit tests</td><td>C++ tests</td><td>~128k</td></tr>
+<tr><td><code>drc</code>/<code>lvs</code></td><td>The DRC/LVS language itself (Ruby)</td><td>~18k</td></tr>
+</table>
+<p>Most of the code base is organised around one idea, which KLayout calls GSI. Each C++ class is declared once in a <code>gsiDecl*.cc</code> file, and that one declaration becomes the Ruby API, the Python API and the API documentation. To find out what a script can do, grep for <code>gsi::method ("name"</code>.</p>
+
+<h3 id="q3"><span class="num">3</span>Should I run Doxygen on it?</h3>
+<p>Probably not, at least not at first. The repo has no Doxyfile. For anything scripted (PCells, macros, tool integration) the API you program against is the GSI script API, and KLayout already documents it in its built-in help (Help → Class Index). The same docs are on klayout.de. If you go deep into the C++ later, run Doxygen only on <code>src/{tl,gsi,db,laybasic,layui,lay,edt}</code> and exclude <code>src/gsiqt</code>, which would otherwise be two thirds of the input.</p>
+
+<h3 id="q4"><span class="num">4</span>"error while loading shared libraries: libklayout_tl.so.0". What now?</h3>
+<p>Two things cause this:</p>
+<ol>
+<li><strong>You ran the wrong binary.</strong> <code>build-release/klayout</code> is an intermediate copy. The installed app is <code>bin-release/klayout</code>.</li>
+<li><strong>The binaries carry no RPATH.</strong> Unless you pass <code>-rpath</code>, <code>build.sh</code> leaves RPATH empty, so you have to run <code>LD_LIBRARY_PATH=$PWD ./klayout</code> from <code>bin-release</code>.</li>
+</ol>
+<div class="warn"><strong>Gotcha:</strong> if you add <code>-rpath</code> to an existing build, <code>make</code> doesn't relink files that are already up to date just because the linker flags changed. You end up with an executable that has the path and libraries that don't. Delete the linked outputs in the build directory (<code>*.so*</code>, <code>*.ut</code> and the executables), then run <code>make -j8 &amp;&amp; make install</code>. The object files are reused, so it's only a relink.</div>
+<p>The unit tests live in the <em>build</em> directory, not the bin directory (the README is out of date on this):</p>
+<pre>cd build-release
+TESTTMP=testtmp TESTSRC=.. LD_LIBRARY_PATH=. ./ut_runner dbBoxTests</pre>
+
+<h3 id="q5"><span class="num">5</span>Why is my checkout 2 GB after building?</h3>
+<table>
+<tr><th>Part</th><th>Size</th><th>Notes</th></tr>
+<tr><td><code>build-release/</code></td><td>1.2 GB</td><td>About 750 MB of object files. The generated Qt bindings alone are 470 MB.</td></tr>
+<tr><td><code>.git</code></td><td>356 MB</td><td>Full history</td></tr>
+<tr><td><code>bin-release/</code></td><td>209 MB</td><td>The actual install</td></tr>
+<tr><td><code>src</code> / <code>testdata</code></td><td>157 / 79 MB</td><td></td></tr>
+</table>
+<p>You can delete the build directory once things are installed, but you lose incremental rebuilds. Building with <code>-without-qtbinding</code> saves about half a gigabyte and a lot of compile time. The cost is that scripts lose access to Qt classes such as <code>QTcpServer</code>, which I need for tool-to-tool communication.</p>
+
+<h2>Setup and customisation</h2>
+
+<h3 id="q6"><span class="num">6</span>How do I get a black background like Virtuoso, and only set it once?</h3>
+<p>In the GUI, go to <strong>File → Setup → Display → Background</strong>. KLayout saves all settings to <code>~/.klayout/klayoutrc</code> when it exits, so this is a one-time step.</p>
+<p>If you'd rather keep settings in a version-controlled init file, as you would with <code>.cdsinit</code> or <code>xschemrc</code>, use a startup macro. Any <code>.pym</code> file in <code>~/.klayout/pymacros/</code> runs automatically at startup:</p>
+<pre># ~/.klayout/pymacros/my_init.pym
+import pya
+mw = pya.MainWindow.instance()
+mw.set_config("background-color", "#000000")</pre>
+
+<h3 id="q7"><span class="num">7</span>Can I keep custom keyboard shortcuts in an init file?</h3>
+<p>Yes. In the GUI, use <strong>File → Setup → Application → Customize Menu</strong>, which saves to <code>klayoutrc</code>. For an init file, the script API has <code>MainWindow.set_key_bindings</code>, <code>get_key_bindings</code> and <code>get_default_key_bindings</code>. Bindings are keyed by menu path, and any menu entry can be bound, including your own macros:</p>
+<pre>mw.set_key_bindings({
+    "zoom_menu.zoom_fit": "F",      # default is F2
+    "edit_menu.undo":     "U",      # default is Ctrl+Z
+})</pre>
+<p>Print <code>get_default_key_bindings()</code> once to see every menu path. With that, a Virtuoso-style keymap can live in a single file under version control.</p>
+
+<h3 id="q8"><span class="num">8</span>Magic has R and C parasitic extraction. Does KLayout?</h3>
+<ul>
+<li><strong>Built in:</strong> since 0.30.2 KLayout has a <code>pex</code> module for <em>resistance</em> extraction only. It provides <code>pex.RExtractor</code> with square-counting and triangulation methods, plus <code>RNetExtractor</code> and <code>RNetwork</code>.</li>
+<li><strong>Add-on:</strong> <a href="https://iic-jku.github.io/klayout-pex-website/">KLayout-PEX (kpex)</a> from IIC-JKU does R and C extraction on top of KLayout, with FasterCap, FastCap2 or Magic as optional backends. I haven't yet compared it with Magic on sky130.</li>
+</ul>
+
+<h2>Analog flow and sky130</h2>
+
+<h3 id="q9"><span class="num">9</span>Is there an existing Xschem ↔ KLayout cross-probe?</h3>
+<p>I couldn't find one. The closest things are <a href="https://pypi.org/project/klayout-klink/">klink/klive</a>, a KLayout plugin that opens a TCP server so other tools can push layouts into a running KLayout, and example projects such as <a href="https://codeberg.org/mole99/klayout-sky130-inverter">mole99/klayout-sky130-inverter</a> that use the two tools side by side through a Makefile-driven LVS flow.</p>
+<p>Both tools have the pieces needed to build one:</p>
+<ul>
+<li><strong>Xschem</strong> has a Tcl TCP server and select/highlight commands that take hierarchical paths.</li>
+<li><strong>KLayout</strong> has a scriptable netlist browser, an LVS cross-reference that maps schematic objects to layout objects, selection events, and Qt networking for scripts.</li>
+</ul>
+<div class="warn"><strong>Two gotchas:</strong> KLayout's embedded Python never releases the interpreter lock, so use Qt signals or timers, not Python threads or asyncio. And Xschem's TCP server evaluates any Tcl it receives, so bind it to localhost only.</div>
+
+<h3 id="q10"><span class="num">10</span>What does it take to do sky130 layout in KLayout if I already use sky130 in Xschem?</h3>
+<p>An Xschem-only setup usually has symbols and SPICE models but nothing for layout. With <a href="https://github.com/fossi-foundation/ciel-releases">ciel</a>, open_pdks ships one tarball per library, and you need two: <code>common</code> (6.6 MB: KLayout tech and layer files, DRC and LVS decks, the PCell library) and <code>sky130_fd_pr</code> (14.2 MB: device GDS, SPICE, LEF). That's about 105 MB on disk. Magic and netgen aren't required, because KLayout runs DRC and LVS itself.</p>
+<p>The stock Xschem sky130 symbols already write LVS netlist lines such as <code>sky130_fd_pr__nfet_01v8 L= W= nf= m=</code>, which is the naming the KLayout LVS deck expects.</p>
+<div class="warn"><strong>The catch: the PCells need patching.</strong> An nfet at any W/L/nf comes from a gdsfactory-based PCell library called <code>skywater130</code>. With current gdsfactory 9 / kfactory 3 every PCell quietly produces an <em>empty cell</em>, which is why so many people report it "doesn't work". The JKU <a href="https://github.com/iic-jku/iic-osic-tools">IIC-OSIC-TOOLS</a> install script carries the fixes. Install the PDK at their pinned open_pdks commit (<code>1689ac3f</code>) and keep gdsfactory 9.51.0 / kfactory 3.0.4 in a venv.</div>
+<p>What I verified on my own 0.30.12 build:</p>
+<ul>
+<li><strong>PCells:</strong> nfet, pfet, poly resistor, MIM cap, vias and guard rings all generate.</li>
+<li><strong>DRC:</strong> <code>sky130A_mr.drc</code> with <code>-rd feol=true -rd beol=true -rd offgrid=true</code> runs 256 rule categories with 0 violations. The default <code>.lydrc</code> has front-end checks <em>off</em>, so a clean result from it means little.</li>
+<li><strong>LVS:</strong> an Xschem-style netlist matches with <code>-rd convert_subckts=true -rd scale=true</code>.</li>
+</ul>
+<div class="tip"><strong>Things that bit me:</strong> KLayout's Python ignores <code>PYTHONPATH</code>; point it at the venv with <code>KLAYOUT_PYTHONPATH</code>. The PCell's <code>w</code> is per finger while Xschem's <code>W</code> is total, so <code>w = W/nf</code>. Pass <code>gate_con_pos</code> and <code>bulk</code> explicitly. Multi-finger PCells don't strap their fingers, so an nf=4 device extracts as four devices until you route it.</div>
+
+<h2>UI/UX compared with Cadence Virtuoso</h2>
+
+<p>Short version: KLayout's viewing and script API are strong. What it lacks are the things that make Virtuoso feel like an <em>environment</em> rather than a viewer.</p>
+<table>
+<tr><th>Virtuoso</th><th>KLayout 0.30</th><th>Verdict</th></tr>
+<tr><td>CIW with command log (CDS.log)</td><td>Script console and a log viewer; GUI actions aren't logged as commands</td><td class="bad">Missing</td></tr>
+<tr><td>Library Manager (lib/cell/view)</td><td>Libraries panel: list and drag; one file = one library</td><td class="mid">Minimal</td></tr>
+<tr><td>Many windows, any monitor</td><td>One main window with tabs; side panels can float</td><td class="bad">Missing</td></tr>
+<tr><td>SKILL</td><td>Python and Ruby, full API, macro IDE</td><td class="good">Strong</td></tr>
+<tr><td><code>f</code> = zoom fit, bindkeys in .cdsinit</td><td>F2; rebind anything from an init macro</td><td class="good">Fine</td></tr>
+</table>
+
+<h3 id="q11"><span class="num">11</span>Does KLayout have a Command Interpreter Window that logs commands?</h3>
+<p><strong>No.</strong> There are two partial equivalents:</p>
+<ul>
+<li><strong>Macro Development → Console</strong>: an interactive Python or Ruby prompt, the equivalent of typing SKILL into the CIW.</li>
+<li><strong>File → Log Viewer</strong>: info, warning and error messages. Starting with <code>-d &lt;level&gt;</code> makes it chattier.</li>
+</ul>
+<p>What's missing is the part of the CIW that makes SKILL learnable: GUI actions are never echoed as replayable commands. There's no CDS.log-style journal and no macro recorder. A CIW-style dock that logs each menu action as its script call could be built as a plugin on the existing API, but it doesn't exist today.</p>
+
+<h3 id="q12"><span class="num">12</span>Is there a Library Manager?</h3>
+<p><strong>A minimal one.</strong> The <strong>Libraries</strong> panel lists registered libraries with their cells and PCells, and you drag from it into a layout. The <strong>Cells</strong> panel shows the hierarchy within the open file. There's no library → cell → view browser, no <code>cds.lib</code>, no categories, and no copy, rename, delete or check-in.</p>
+<p>The underlying difference is the data model. In Virtuoso a library is a directory of cells, each with views. In KLayout a library is a <em>file</em>, or a set of PCells registered by a script. A lib/cell/view layer has to be added on top, which is what my project plans to do.</p>
+
+<h3 id="q13"><span class="num">13</span>Can I look at two layouts in separate windows on two monitors?</h3>
+<p><strong>Not from one process.</strong> KLayout allows a single main window (it's enforced in <code>layMainWindow.cc</code>). Extra layouts open as tabs that can't be torn off. The side panels (layers, cells, libraries, navigator) are dock widgets and <em>can</em> be floated onto another monitor.</p>
+<p>The practical answer is <strong>two KLayout processes</strong>, one per monitor.</p>
+<div class="warn"><strong>Gotcha:</strong> each process writes <code>~/.klayout/klayoutrc</code> when it exits, so the last one closed wins. Start the second one with <code>-t</code> so it doesn't save its settings:
+<pre>klayout top.gds &amp;
+klayout -t other.gds &amp;</pre></div>
+<p>Within one window you can also overlay two layouts in the same tab ("add to current panel" when opening), compare them with the XOR and Diff tools, or turn on <strong>Display → Synchronized Views</strong> so switching tabs keeps the same zoom area.</p>
+
+<h3 id="q14"><span class="num">14</span>What is the command language? How good is scripting support?</h3>
+<p><strong>Python and Ruby, both built in, and the scripting is excellent.</strong> There's no single native language like SKILL. Instead both languages get the <em>same complete API</em>, generated from the C++ declarations: the layout database, views, menus, the netlist and LVS engine, and even Qt widgets for building your own dialogs. It's documented in Help → Class Index.</p>
+<ul>
+<li><strong>Macro Development IDE</strong>: an editor, debugger and console.</li>
+<li><strong>Init files</strong>: <code>.pym</code> and <code>.rbm</code> files in <code>~/.klayout/pymacros</code> and <code>~/.klayout/macros</code> run at startup, the equivalent of <code>.cdsinit</code>.</li>
+<li><strong>Batch mode</strong>: <code>klayout -b -r script.py</code>.</li>
+<li><strong>DRC and LVS</strong> are rule languages (Ruby DSLs) on the same engine.</li>
+<li><strong>Standalone module</strong>: <code>pip install klayout</code> gives you the database without the GUI.</li>
+</ul>
+<p>The gap compared with SKILL isn't power, it's <em>discoverability</em>. Without a command log you learn the API from the docs rather than by watching what the GUI does.</p>
+
+<h3 id="q15"><span class="num">15</span>What is the keyboard shortcut for zoom fit? (Virtuoso: <code>f</code>)</h3>
+<p><strong>F2.</strong> Shift+F2 fits the selection, and Ctrl++ / Ctrl+- zoom in and out. To get Virtuoso's <code>f</code>, put this in your init macro:</p>
+<pre>pya.MainWindow.instance().set_key_bindings({"zoom_menu.zoom_fit": "F"})</pre>
+
+</div>

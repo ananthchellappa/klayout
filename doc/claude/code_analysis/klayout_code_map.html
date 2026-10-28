@@ -1,0 +1,321 @@
+<title>KLayout Code Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: a process cross-section. Modules stack like mask layers; layer colours borrow the classic layout palette (poly red, metal blue, diffusion green). */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --fg:#1a1f2b; --muted:#5b6475; --rule:#dde1e8;
+  --metal:#2f5fd0; --poly:#c8402f; --diff:#2e8a57; --via:#b07a12; --gen:#9aa3b5;
+  --metal-soft:#e6edfb; --poly-soft:#f9e8e5; --diff-soft:#e5f3ea; --via-soft:#f7eedb;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11141b; --surface:#181c25; --fg:#e4e7ee; --muted:#9aa3b5; --rule:#2a303d;
+  --metal:#7aa2ff; --poly:#ff8a76; --diff:#5fcf8f; --via:#e6b450; --gen:#566079;
+  --metal-soft:#1c2740; --poly-soft:#3a201d; --diff-soft:#17302a; --via-soft:#33291a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11141b; --surface:#181c25; --fg:#e4e7ee; --muted:#9aa3b5; --rule:#2a303d;
+  --metal:#7aa2ff; --poly:#ff8a76; --diff:#5fcf8f; --via:#e6b450; --gen:#566079;
+  --metal-soft:#1c2740; --poly-soft:#3a201d; --diff-soft:#17302a; --via-soft:#33291a; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-stretch:85%;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.6rem;font-weight:700;margin-bottom:.4rem}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0;max-width:68ch}
+code,.mono{font-family:var(--mono);font-size:.88em}
+code{background:var(--metal-soft);padding:.05em .35em;border-radius:3px;overflow-wrap:anywhere}
+a{color:var(--metal)}
+.eyebrow{font:500 .72rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+header{padding-block:48px 28px;border-bottom:1px solid var(--rule);display:grid;gap:14px}
+header p{color:var(--muted);font-size:1.05rem}
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;font:500 .85rem var(--mono)}
+nav a{text-decoration:none}
+nav a:hover,nav a:focus-visible{text-decoration:underline}
+section{padding-block:44px 8px;display:grid;gap:18px}
+.lede{color:var(--muted)}
+
+/* size chart */
+.bars{display:grid;gap:8px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px}
+.bar{display:grid;grid-template-columns:8.5rem 1fr 5.5rem;gap:12px;align-items:center;font-size:.88rem}
+.bar .lab{font-family:var(--mono);font-size:.82rem}
+.bar .track{height:14px;background:var(--bg);border-radius:2px;overflow:hidden}
+.bar .fill{height:100%;background:var(--metal)}
+.bar .num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:.82rem;color:var(--muted)}
+.bar.gen .fill{background:repeating-linear-gradient(135deg,var(--gen) 0 4px,transparent 4px 8px);border:1px solid var(--gen)}
+.bar.ruby .fill{background:var(--poly)}
+.note{font-size:.82rem;color:var(--muted)}
+
+/* layer stack */
+.stack{display:grid;gap:4px}
+.layer{display:grid;grid-template-columns:6px minmax(0,1fr);background:var(--surface);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.layer .stripe{background:var(--diff)}
+.layer.qt .stripe{background:var(--metal)}
+.layer.app .stripe{background:var(--poly)}
+.layer .body{padding:10px 14px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+.layer .mods{font:600 .95rem var(--mono)}
+.layer .what{color:var(--muted);font-size:.86rem}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.82rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.side{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.side div{border:1px dashed var(--rule);border-radius:6px;padding:10px 14px;font-size:.88rem}
+.side b{font-family:var(--mono);font-weight:600}
+
+/* ideas */
+.ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.idea{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.idea .tag{font:600 .75rem var(--mono);color:var(--metal)}
+.idea p{font-size:.92rem}
+pre{margin:0;background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:12px;overflow-x:auto;font:400 .8rem/1.5 var(--mono)}
+
+/* steps */
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:8px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:10px;align-items:baseline}
+ol.steps li::before{content:counter(s);font:700 .9rem var(--mono);color:var(--via);text-align:right}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:620px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--rule)}
+th{font:600 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+
+/* bridge diagram */
+.bridge{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,.7fr) minmax(0,1fr);gap:12px;align-items:stretch}
+.tool{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.tool h3{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tool h3 small{font:500 .72rem var(--mono);color:var(--muted)}
+.tool ul{margin:0;padding-left:1.1em;font-size:.86rem;display:grid;gap:4px}
+.tool.xs{border-top:3px solid var(--diff)}
+.tool.kl{border-top:3px solid var(--metal)}
+.wires{display:grid;gap:10px;align-content:center;font-size:.78rem}
+.wire{display:grid;gap:2px;text-align:center}
+.wire .line{height:2px;position:relative;background:var(--c)}
+.wire .line::after{content:"";position:absolute;top:-4px;border:5px solid transparent}
+.wire.r .line::after{right:-2px;border-left-color:var(--c);border-right:0}
+.wire.l .line::after{left:-2px;border-right-color:var(--c);border-left:0}
+.wire span{color:var(--muted)}
+.wire b{font-family:var(--mono);font-weight:500;color:var(--fg)}
+@media (max-width:720px){.bridge{grid-template-columns:1fr}.wire .line{display:none}}
+
+/* phases */
+.phases{display:grid;gap:12px}
+.phase{display:grid;grid-template-columns:5.5rem minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:16px}
+.phase .p{font:800 1.5rem var(--display);font-stretch:80%;color:var(--via)}
+.phase .p small{display:block;font:500 .7rem var(--mono);color:var(--muted);letter-spacing:.06em}
+.phase ul{margin:6px 0 0;padding-left:1.1em;font-size:.88rem;display:grid;gap:3px}
+.exit{font-size:.82rem;color:var(--diff);font-weight:600;margin-top:6px}
+@media (max-width:520px){.phase{grid-template-columns:1fr;gap:4px}.bar{grid-template-columns:6.5rem 1fr 4.6rem}}
+
+.risks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.risk{border-left:3px solid var(--poly);background:var(--surface);padding:12px 14px;border-radius:0 6px 6px 0;font-size:.88rem;min-width:0}
+.risk b{display:block;margin-bottom:2px}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);font-size:.8rem;color:var(--muted)}
+:focus-visible{outline:2px solid var(--metal);outline-offset:2px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">KLayout 0.30.12-dev · master @ 7eb9a25b4 · 26 Oct 2026</div>
+  <h1>KLayout Code Map</h1>
+  <p>How the KLayout source is organised, which ideas hold it together, and where to plug in an Xschem ↔ KLayout cross-probe for an open schematic-driven-layout flow.</p>
+  <nav aria-label="Sections">
+    <a href="#size">Size</a><a href="#layers">Layering</a><a href="#ideas">Core ideas</a><a href="#startup">Startup</a><a href="#where">Where things live</a><a href="#bridge">Cross-probe</a><a href="#plan">Plan</a>
+  </nav>
+</header>
+
+<section id="size">
+  <div class="eyebrow">How big is it</div>
+  <h2>3.2 million lines of C++, two thirds of them generated</h2>
+  <p class="lede">The Qt bindings for scripting (<code>gsiqt</code>) are machine-generated and dwarf everything else. The hand-written code is about one million lines, and a quarter of that is the layout database.</p>
+  <div class="bars" role="img" aria-label="Lines of code per module, linear scale">
+    <div class="bar gen"><span class="lab">gsiqt (gen.)</span><span class="track"><span class="fill" style="width:100%;display:block"></span></span><span class="num">2,202k</span></div>
+    <div class="bar"><span class="lab">db</span><span class="track"><span class="fill" style="width:11.57%;display:block"></span></span><span class="num">255k</span></div>
+    <div class="bar"><span class="lab">laybasic</span><span class="track"><span class="fill" style="width:8.9%;display:block"></span></span><span class="num">196k</span></div>
+    <div class="bar"><span class="lab">plugins</span><span class="track"><span class="fill" style="width:6.52%;display:block"></span></span><span class="num">144k</span></div>
+    <div class="bar"><span class="lab">unit tests</span><span class="track"><span class="fill" style="width:5.81%;display:block"></span></span><span class="num">128k</span></div>
+    <div class="bar"><span class="lab">tl</span><span class="track"><span class="fill" style="width:2.7%;display:block"></span></span><span class="num">59k</span></div>
+    <div class="bar"><span class="lab">layui</span><span class="track"><span class="fill" style="width:2.54%;display:block"></span></span><span class="num">56k</span></div>
+    <div class="bar"><span class="lab">lay</span><span class="track"><span class="fill" style="width:2.11%;display:block"></span></span><span class="num">46k</span></div>
+    <div class="bar"><span class="lab">edt</span><span class="track"><span class="fill" style="width:1.24%;display:block"></span></span><span class="num">27k</span></div>
+    <div class="bar"><span class="lab">gsi</span><span class="track"><span class="fill" style="width:1.07%;display:block"></span></span><span class="num">24k</span></div>
+    <div class="bar"><span class="lab">pya + rba</span><span class="track"><span class="fill" style="width:0.9%;display:block"></span></span><span class="num">20k</span></div>
+    <div class="bar ruby"><span class="lab">DRC/LVS (Ruby)</span><span class="track"><span class="fill" style="width:0.8%;display:block"></span></span><span class="num">18k</span></div>
+  </div>
+  <p class="note">Counted with <code>wc -l</code> over tracked .cc/.h files (Ruby for DRC/LVS), excluding unit_tests except the row that counts them. Bars share one linear scale.</p>
+</section>
+
+<section id="layers">
+  <div class="eyebrow">Dependency stack · from src/klayout.pro</div>
+  <h2>Modules stack like process layers</h2>
+  <p class="lede">Each layer depends only on layers below it. The bottom group builds without Qt, and that Qt-less core is what <code>pip install klayout</code> ships.</p>
+  <div class="legend"><span style="--c:var(--poly)">application</span><span style="--c:var(--metal)">needs Qt</span><span style="--c:var(--diff)">Qt-less core</span></div>
+  <div class="stack">
+    <div class="layer app"><span class="stripe"></span><div class="body"><span class="mods">klayout_main</span><span class="what">the executable; picks GUI or batch application</span></div></div>
+    <div class="layer app"><span class="stripe"></span><div class="body"><span class="mods">lay</span><span class="what">MainWindow, Application, macro IDE, salt package manager, technologies</span></div></div>
+    <div class="layer qt"><span class="stripe"></span><div class="body"><span class="mods">ant · img · edt</span><span class="what">rulers, image overlays, editing services and selection</span></div></div>
+    <div class="layer qt"><span class="stripe"></span><div class="body"><span class="mods">layview → layui</span><span class="what">Qt view widget; dialogs including the netlist and marker browsers</span></div></div>
+    <div class="layer qt"><span class="stripe"></span><div class="body"><span class="mods">laybasic (+ gsiqt)</span><span class="what">LayoutViewBase, renderer, plugins, dispatcher, menus, markers</span></div></div>
+    <div class="layer"><span class="stripe"></span><div class="body"><span class="mods">rdb · pex · lib</span><span class="what">report/marker DB, parasitic extraction, built-in libraries</span></div></div>
+    <div class="layer"><span class="stripe"></span><div class="body"><span class="mods">db</span><span class="what">Layout/Cell/Shapes, Region (flat + deep), booleans, netlist extraction, LVS compare, stream framework</span></div></div>
+    <div class="layer"><span class="stripe"></span><div class="body"><span class="mods">gsi</span><span class="what">reflection layer that exposes C++ to scripts</span></div></div>
+    <div class="layer"><span class="stripe"></span><div class="body"><span class="mods">tl</span><span class="what">strings, streams, XML, expressions, threads, unit-test framework</span></div></div>
+  </div>
+  <div class="side">
+    <div><b>rba · pya</b><br>Ruby and Python interpreters over GSI. <b>rbastub</b>/<b>pyastub</b> replace them when a language is disabled.</div>
+    <div><b>drc · lvs</b><br>Ruby DSLs on top of the <b>db</b> script API. They're built only with Ruby.</div>
+    <div><b>plugins/streamers</b><br>GDS2, OASIS, LEF/DEF, DXF, CIF, Magic… each split into a <b>db_plugin</b> (format) and a <b>lay_plugin</b> (options UI).</div>
+    <div><b>buddies · pymod</b><br>Command-line tools (strmcmp, strmxor…) and the standalone Python package.</div>
+  </div>
+</section>
+
+<section id="ideas">
+  <div class="eyebrow">Read these first</div>
+  <h2>Three ideas that make the codebase make sense</h2>
+  <div class="ideas">
+    <article class="idea">
+      <span class="tag">gsi · gsiDecl*.cc</span>
+      <h3>Declare once, script in two languages</h3>
+      <p>Every scriptable class has a <code>gsiDecl*.cc</code> file next to it. <code>rba</code> and <code>pya</code> turn those declarations into Ruby and Python classes at runtime, and the <code>@brief</code> strings become the API reference. <code>gsiqt</code> does the same for Qt, which is why <code>pya.QTcpServer</code> exists inside KLayout.</p>
+<pre>gsi::Class&lt;db::Box&gt; decl_Box ("db", "Box",
+  gsi::method ("width", &amp;db::Box::width,
+    "@brief Gets the width of the box\n") + …);</pre>
+      <p class="note">To find out what a script can do, grep <code>gsi::method ("name"</code>.</p>
+    </article>
+    <article class="idea">
+      <span class="tag">db</span>
+      <h3>A hierarchical layout database</h3>
+      <p><code>Layout</code> owns <code>Cell</code>s. Each cell holds per-layer <code>Shapes</code> plus <code>Instances</code>, all in integer database units. <code>Region</code>/<code>Edges</code> have flat and <em>deep</em> implementations, and deep mode makes DRC and LVS hierarchical. <code>LayoutToNetlist</code> extracts a <code>Netlist</code>. <code>LayoutVsSchematic</code> compares it to a reference and produces a <code>NetlistCrossReference</code>.</p>
+    </article>
+    <article class="idea">
+      <span class="tag">laybasic → lay</span>
+      <h3>Everything interactive is a plugin</h3>
+      <p><code>lay::Plugin</code>/<code>PluginDeclaration</code> power the edit services, rulers, browsers and net tracer. They register statically, add menu entries and mouse modes, and receive configuration through the <code>Dispatcher</code>. Scripts get the same hooks via <code>lay.PluginFactory</code>. Rendering runs on worker threads. Scripts and UI run on the Qt main thread.</p>
+    </article>
+  </div>
+</section>
+
+<section id="startup">
+  <div class="eyebrow">layApplication.cc · init_app → run</div>
+  <h2>What happens at startup</h2>
+  <ol class="steps">
+    <li><span>Gather search paths: <code>~/.klayout</code>, <code>$KLAYOUT_PATH</code>, and salt packages under <code>~/.klayout/salt</code>.</span></li>
+    <li><span>Register each path's <code>macros/</code> (Ruby) and <code>pymacros/</code> (Python) folders.</span></li>
+    <li><span>Run <b>autorun-early</b> macros, then build the main window and load technologies.</span></li>
+    <li><span>Run <b>autorun</b> macros, then any <code>-r</code> / <code>-rm</code> scripts from the command line.</span></li>
+    <li><span>Enter the Qt event loop. All script code runs on this single thread.</span></li>
+  </ol>
+  <p class="note">Useful options: <code>-e</code> edit mode · <code>-z</code> no GUI · <code>-rr f</code> run a script and stay open · <code>-rd k=v</code> script variable · <code>-rx</code> skip autorun · <code>-j dir</code> extra macro folder.</p>
+</section>
+
+<section id="where">
+  <div class="eyebrow">Navigation</div>
+  <h2>Where things live</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>You want</th><th>Look in</th></tr></thead>
+    <tbody>
+      <tr><td>Geometry and booleans</td><td><code>src/db/db/dbPolygon.h</code>, <code>dbEdgeProcessor.h</code>, <code>dbRegion.h</code></td></tr>
+      <tr><td>A class's script API</td><td><code>src/&lt;mod&gt;/&lt;mod&gt;/gsiDecl&lt;Mod&gt;&lt;Class&gt;.cc</code></td></tr>
+      <tr><td>DRC / LVS language</td><td><code>src/drc/drc/built-in-macros/_drc_engine.rb</code>, <code>src/lvs/lvs/built-in-macros/_lvs_engine.rb</code></td></tr>
+      <tr><td>Netlist and LVS core</td><td><code>dbLayoutToNetlist.h</code>, <code>dbLayoutVsSchematic.h</code>, <code>dbNetlistCompare*.h</code>, <code>dbNetlistCrossReference.h</code></td></tr>
+      <tr><td>SPICE reader/writer</td><td><code>src/db/db/dbNetlistSpiceReader*.cc</code>, <code>dbNetlistSpiceWriter.cc</code></td></tr>
+      <tr><td>Netlist browser</td><td><code>src/layui/layui/layNetlistBrowser*.cc</code>, script API in <code>gsiDeclLayNetlistBrowserDialog.cc</code></td></tr>
+      <tr><td>Editing</td><td><code>src/edt/edt/edtService.cc</code>, <code>edtPartialService.cc</code>, <code>edtMainService.cc</code></td></tr>
+      <tr><td>A file format</td><td><code>src/plugins/streamers/&lt;fmt&gt;/{db_plugin,lay_plugin}</code></td></tr>
+      <tr><td>Tests + golden data</td><td><code>src/*/unit_tests/</code>, <code>testdata/</code>; script tests in <code>testdata/ruby</code>, <code>testdata/python</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="bridge">
+  <div class="eyebrow">Goal · an open "Layout XL"</div>
+  <h2>Cross-probing Xschem and KLayout</h2>
+  <p class="lede">I found no existing open-source tool that does this. Both tools already have the pieces, so a first version needs no C++ changes in either: a KLayout autorun macro and about 100 lines of Xschem Tcl.</p>
+  <div class="bridge">
+    <div class="tool xs">
+      <h3>Xschem <small>Tcl</small></h3>
+      <ul>
+        <li>TCP server, off by default (<code>--tcp_port</code>). Evaluates Tcl, one request per connection</li>
+        <li><code>select_inst {x1.x2.m4}</code>, <code>probe_net {x1.x2.net5}</code>, <code>zoom_selected</code></li>
+        <li>Reads selection via <code>selected_set</code>, <code>selected_wire</code>, <code>get sch_path</code></li>
+        <li>No selection event. Hook by wrapping the <code>infowindow</code> proc</li>
+        <li>LVS netlist export (<code>lvs_netlist=1</code>) with PDK params</li>
+      </ul>
+    </div>
+    <div class="wires" aria-hidden="true">
+      <div class="wire r" style="--c:var(--diff)"><b>probe · JSON line</b><span class="line"></span><span>selection in Xschem</span></div>
+      <div class="wire l" style="--c:var(--metal)"><b>select_inst / probe_net</b><span class="line"></span><span>Tcl over loopback</span></div>
+      <div class="wire r" style="--c:var(--via)"><b>layout_export · JSON</b><span class="line"></span><span>instances, params, pin→net</span></div>
+    </div>
+    <div class="tool kl">
+      <h3>KLayout <small>Python autorun</small></h3>
+      <ul>
+        <li>No built-in server. Use <code>pya.QTcpServer</code> (needs a Qt-bindings build)</li>
+        <li>Name map: <code>LayoutVsSchematic.xref</code> → <code>other_net_for</code></li>
+        <li>Highlight: <code>netlist_browser.current_path = …</code> or <code>lay.Marker</code></li>
+        <li>Events: <code>on_selection_changed</code>, browser <code>on_probe</code></li>
+        <li>Place PCells: <code>create_cell(pcell, lib, params)</code> + <code>set_property</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Names are the identity</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Concept</th><th>Xschem</th><th>KLayout LVS</th></tr></thead>
+    <tbody>
+      <tr><td>Hierarchy</td><td><code>x1.x2.net5</code> (dot-separated). A flat netlist uses <code>_</code></td><td>root circuit + subcircuit list (<code>NetlistObjectPath</code>)</td></tr>
+      <tr><td>Unnamed net</td><td><code>#net5</code> internally, <code>net5</code> in SPICE</td><td><code>$&lt;id&gt;</code>; only the LVS xref can match it</td></tr>
+      <tr><td>Buses</td><td><code>A[3:0]</code> → <code>A[3],A[2],…</code></td><td>as read from SPICE</td></tr>
+      <tr><td>Persistent ID</td><td>none (session-only ids)</td><td>none, unless we stamp instance properties</td></tr>
+      <tr><td>MOS params</td><td>sky130 <code>W L nf mult</code> · gf180 <code>L W nf m</code> · IHP <code>w l ng m</code></td><td>PDK PCell params; needs a per-PDK map</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="plan">
+  <div class="eyebrow">Phased plan</div>
+  <h2>From a probe loop to schematic-driven layout</h2>
+  <div class="phases">
+    <div class="phase"><div class="p">P0<small>LVS-BACKED</small></div><div>
+      <h3>Cross-probe an existing layout</h3>
+      <ul><li>Xschem writes the LVS netlist. KLayout's PDK LVS deck produces a <code>.lvsdb</code>, which is loaded into the netlist browser.</li>
+      <li>Xschem → KLayout: <code>xref.other_net_for</code>, then <code>current_path=</code> highlights and zooms.</li>
+      <li>KLayout → Xschem: browser <code>on_selection_changed</code>, then <code>probe_net {…}</code> over Tcl.</li></ul>
+      <div class="exit">Done when: clicking a net in either tool highlights it in the other on the sky130 inverter.</div></div></div>
+    <div class="phase"><div class="p">P1<small>NO LVS</small></div><div>
+      <h3>Instance cross-probe through properties</h3>
+      <ul><li>Stamp each placed instance with its schematic path (<code>set_property</code>, string keys in OASIS).</li>
+      <li>On layout selection, read the property and send <code>select_inst</code>. In the other direction, find the instance by property, then <code>select_object</code> + <code>zoom_fit_sel</code>.</li></ul></div></div>
+    <div class="phase"><div class="p">P2<small>GENERATE</small></div><div>
+      <h3>Schematic-driven layout</h3>
+      <ul><li>Xschem <code>layout_export</code> produces JSON: path, symbol, evaluated W/L/nf/m, pin→net.</li>
+      <li>KLayout places PDK PCells through a per-PDK parameter map and draws flylines as markers between pins on the same net.</li>
+      <li>ECO update: diff the export against the stamped instances, then add, delete or re-parameterize while keeping placement.</li></ul></div></div>
+    <div class="phase"><div class="p">P3<small>NATIVE</small></div><div>
+      <h3>Polish, and C++ if needed</h3>
+      <ul><li>Net/instance dock panel, unrouted-net report, incremental LVS.</li>
+      <li>Move hot paths into a <code>lay::Plugin</code> under <code>src/plugins/tools/</code> if the Python markers are too slow.</li></ul></div></div>
+  </div>
+
+  <h3>Risks</h3>
+  <div class="risks">
+    <div class="risk"><b>Python never releases the GIL</b>Background threads starve and asyncio blocks the GUI. Drive everything from Qt signals or a QTimer.</div>
+    <div class="risk"><b>No Qt bindings, no server</b>Builds with <code>-without-qtbinding</code> and the pip module lack QTcpServer. Fall back to a small C++ plugin.</div>
+    <div class="risk"><b>Browser highlights are transient</b>They disappear when the netlist browser closes. Draw our own markers from <code>shapes_of_net</code>, mapped from the internal layout.</div>
+    <div class="risk"><b>Xschem's server runs any Tcl</b>It binds all interfaces with no auth. Keep both directions on 127.0.0.1, which matters on AWS/Docker.</div>
+    <div class="risk"><b>Device names drift</b>The SPICE prefix (<code>XM3</code> vs <code>M3</code>) and the reader's naming can differ. Verify on the first real design.</div>
+  </div>
+</section>
+
+<footer>
+  Source: <span class="mono">doc/claude/code_analysis/</span> in the KLayout repo (architecture.md, crossprobe_layout_xl.md). KLayout facts were checked against the source. Xschem facts come from a survey of the xschem-private repository. Prior art: klayout-klink (TCP push into KLayout) and mole99/klayout-sky130-inverter (Makefile LVS flow).
+</footer>
+</div>
