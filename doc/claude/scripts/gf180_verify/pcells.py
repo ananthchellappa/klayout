@@ -5,9 +5,9 @@ if lib is None:
     raise RuntimeError("gf180mcu_klayoutapi not registered: is KLAYOUT_PATH set (source ~/pdk/gf180mcuD.env)?")
 ly = pya.Layout(); ly.dbu = 0.001
 top = ly.create_cell("TOP")
-# Broken upstream at the pinned commit: the deep-nwell diodes exhaust memory in Cell.flatten
-# (that took WSL down at 12 GB); efuse raises TypeError (draw_efuse missing device_name).
-SKIP = {"diode_pw2dw", "diode_dw2ps", "efuse"}
+# Broken upstream at the pinned commit: efuse raises TypeError (draw_efuse missing device_name).
+# (The deep-nwell diodes used to exhaust memory here; patch_gf180.py fixes them.)
+SKIP = {"efuse"}
 x = 0.0
 for name in lib.layout().pcell_names():
     if name in SKIP:

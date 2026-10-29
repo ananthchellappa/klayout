@@ -10,6 +10,9 @@ specs = [
     ("mimb_m5",   "cap_mim",   {"mim_option": "MIM-B", "metal_level": "M5", "w": 10.0, "l": 10.0}),
     ("ppolyf_u",  "ppolyf_u_resistor", {"w": 1.0, "l": 10.0}),
     ("hires",     "ppolyf_u_high_Rs_resistor", {"w": 1.0, "l": 10.0}),
+    # deep-nwell diodes at their (patched) default = minimum size
+    ("dio_pw2dw", "diode_pw2dw", {"volt": "3.3V"}),
+    ("dio_dw2ps", "diode_dw2ps", {"volt": "3.3V"}),
 ]
 x = 0.0
 for tag, name, p in specs:

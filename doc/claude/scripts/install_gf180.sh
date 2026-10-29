@@ -54,36 +54,9 @@ cp -a "$SRC/pr/rules/klayout/macros/."    "$DEST/macros/"
 cp -a "$SRC/pv/klayout/drc/."             "$DEST/drc/"
 cp -a "$SRC/pv/klayout/lvs/."             "$DEST/lvs/"
 cp "$SRC/pr/LICENSE" "$DEST/LICENSE"
-# pymacros/cells is the gdsfactory PCell library ("gf180mcu"). Without gdsfactory it
-# fails to load with a warning that reads like an error. Patch the PDK's startup macro
-# to skip it when gdsfactory is absent and print what that means instead.
-python3 - "$DEST/pymacros/gf180mcu.lym" <<'PYEOF'
-import sys
-path = sys.argv[1]
-text = open(path).read()
-start = text.index("# Load the gdsfactory based PCells")
-end = text.index("# Load the KLayout API based PCells")
-patched = '''# Load the gdsfactory based PCells (patched by the Layout-XL kit's install_gf180.sh)
-import importlib.util
-if importlib.util.find_spec("gdsfactory") is None:
-    print("## gf180mcuD (Layout-XL kit): using the KLayout-API PCell library gf180mcu_klayoutapi.")
-    print("##   Skipped: the gdsfactory PCell library 'gf180mcu' (gdsfactory is not installed).")
-    print("##   Given up: via_dev, the via-stack PCell; it exists only in that library.")
-    print("##     Every device (MOS, BJT, diodes, MIM/MOS caps, resistors) is in gf180mcu_klayoutapi.")
-    print("##   To get it: install gdsfactory~=7.9.4 (the PDK's pinned version) for the Python")
-    print("##     KLayout embeds, then restart. Untested here; see doc/claude/gf180_pdk.md.")
-else:
-    try:
-        from cells import gf180mcu
-        gf180mcu()
-        print("## gf180mcu PDK Pcells loaded.")
-    except Exception as e:
-        print(f"## gf180mcu PDK gdsfactory based Pcells failed to load, got an exception: {e}.")
-        print("## Please check that you have a relevant gdsfactory module version installed.")
-
-'''
-open(path, "w").write(text[:start] + patched + text[end:])
-PYEOF
+# Our fixes to the assembled tree: quiet gdsfactory notice, contact counts that can't go
+# negative (a too-small PCell made 2**64-1 contacts and exhausted memory), diode minimums.
+python3 "$(dirname "$0")/patch_gf180.py" "$DEST"
 printf '%s\n%s\n' "gf180mcu_fd_pr $PR_COMMIT" "gf180mcu_fd_pv $PV_COMMIT" > "$DEST/VERSIONS"
 
 cat > "$PDK_ROOT/$PDK.env" <<EOF

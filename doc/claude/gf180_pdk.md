@@ -23,7 +23,19 @@ source ~/pdk/gf180mcuD.env && klayout -e
   - `GF_PDK_OPTION=D`;
   - `KLAYOUT_PATH`;
   - `PATH` to include `bin-release`, because the PDK's DRC/LVS menu entries run `klayout -b` from PATH.
+- **Our fixes to the PDK** are applied by `doc/claude/scripts/patch_gf180.py` to the assembled tree; the pinned sources stay untouched.
 - **The gdsfactory PCell library (`gf180mcu`) is skipped.** The installer patches the PDK's `pymacros/gf180mcu.lym` so that, without gdsfactory, it skips that library and prints a notice at every start instead of an error-like warning. See "The gdsfactory library" below.
+
+## The deep n-well diode memory blow-up (fixed by our patch)
+
+- **Cause:** at their defaults (w = 0.22, l = 0.36 µm), `diode_pw2dw` and `diode_dw2ps` compute contact rows of negative length. `number_spc_contacts()` then returns −1, `pya.CellInstArray` takes the count as unsigned (−1 → 2⁶⁴ − 1), and `Cell.flatten` tries to make that many contacts. This took WSL down at 12 GB.
+- **Not only the diodes:** the same `int(...)` count is used in `draw_res.py`, `draw_cap_mim.py`, `draw_cap_mos.py`, `draw_fet.py` and `draw_mos.py`. Their defaults are fine, but a too-small value typed into a form could trigger it.
+- **Our patch:**
+  1. clamps all 26 counts at 0, so a too-small device draws without contacts and DRC flags it;
+  2. raises the two diodes' defaults and form minimums to 3 × 3 µm.
+- **Why 3 × 3:** every contact row exists from 1.62 × 0.68 (`pw2dw`) and 2.62 × 1.68 (`dw2ps`), but below 3 µm DRC is clean only at some sizes, and not monotonically. From 3 to 10 µm, all 324 sizes tested (9 × 9 w/l values, both voltages, both diodes) are DRC-clean.
+- **Upstream:** issue draft in `doc/claude/upstream/gf180mcu_fd_pr_negative_contact_count.md`, not yet posted.
+- **Safety net:** the kit's `klayout` launcher (`doc/claude/kit/bin/klayout`) runs the GUI under a 10 GiB cgroup cap (`KLAYOUT_MEM` to change), so any future runaway kills KLayout, not WSL. Jobs that KLayout starts, such as the DRC/LVS menu runs, share that cap.
 
 ## The gdsfactory library
 
@@ -42,10 +54,10 @@ So skipping it gives up only `via_dev`. That matters for the via rows/columns bi
 
 | Check | Result |
 |---|---|
-| All 31 PCells at defaults | 28 produce geometry. **Broken upstream:** `diode_pw2dw` and `diode_dw2ps` exhaust memory in `Cell.flatten` (this took WSL down at 12 GB); `efuse` raises TypeError. All three are skipped. |
+| All 31 PCells at defaults | 30 produce geometry. `efuse` raises TypeError upstream and is skipped. `diode_pw2dw` and `diode_dw2ps` used to exhaust memory; our patch fixes them (see below). |
 | DRC, single nfet with bulk tie | Clean, apart from 6 whole-die density rules that a test cell can't meet |
 | LVS, single nfet vs Xschem-format netlist | **Netlists match** |
-| DRC per device, analog set: nfet/pfet with bulk tie, nf=4 with guard ring, MIM-B 10×10 on M5, `ppolyf_u`, high-R poly | **All clean** |
+| DRC per device, analog set: nfet/pfet with bulk tie, nf=4 with guard ring, MIM-B 10×10 on M5, `ppolyf_u`, high-R poly, both deep n-well diodes at their (patched) 3×3 default | **All clean** |
 | Extraction | nfet/pfet_03v3 with the drawn W/L; MIM 100 µm² → 0.2 pF `cap_mim_2f0fF`; `ppolyf_u`, `ppolyf_u_1k` |
 
 Every KLayout call in the checks runs under a cgroup RAM cap (`systemd-run --user --scope -p MemoryMax=6G`) and `timeout -s KILL`. `ulimit -v` can't be used: it breaks the multi-threaded DRC.

@@ -1,0 +1,17 @@
+#!/bin/bash
+# Start this repo's KLayout under a RAM cap, so a runaway (a broken PCell once tried to
+# make 2**64-1 contacts) kills KLayout instead of taking all of WSL down.
+#
+#   klayout [args...]               same arguments as KLayout itself
+#   KLAYOUT_MEM=12G klayout ...     change the cap (default 10G)
+#
+# Runs started from inside a capped KLayout (e.g. the PDK's DRC/LVS menus run "klayout -b")
+# stay in the parent's cgroup, so the GUI and its jobs share one cap.
+# Without a systemd user session the cap is skipped and KLayout starts normally.
+REAL=${KLAYOUT_REAL:-$(cd "$(dirname "$(readlink -f "$0")")/../../../.." && pwd)/bin-release/klayout}
+
+if [ -n "${LAYOUT_XL_MEM_SCOPE:-}" ] || ! systemctl --user show-environment >/dev/null 2>&1; then
+  exec "$REAL" "$@"
+fi
+export LAYOUT_XL_MEM_SCOPE=1
+exec systemd-run --user --scope -q -p MemoryMax="${KLAYOUT_MEM:-10G}" -p MemorySwapMax=0 "$REAL" "$@"
