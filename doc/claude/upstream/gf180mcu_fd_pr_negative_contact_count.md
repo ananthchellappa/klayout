@@ -64,6 +64,6 @@ At 3 × 3 µm and every w, l in {3, 3.25, 3.5, 4, 4.45, 5, 6.3, 7, 10}, both vol
 1. **Raise the defaults and minimums** (`diode_pw2dw_l/_w`, `diode_dw2ps_l/_w` in `diode.py`, which `coerce_parameters_impl` also uses as minimums) to 3 µm, or to whatever size the maintainers know is clean.
 2. **Clamp contact counts at 0** in `number_spc_contacts` (`draw_diode.py`, `draw_res.py`, `draw_cap_mim.py`, `draw_cap_mos.py`). Also clamp the single-line `nx`/`ny`/`nxgr` counts in `draw_fet.py` and `draw_mos.py`, which use the same pattern. A too-small value typed into a form then gives a DRC error instead of a runaway allocation.
 
-We apply exactly these two changes in our installer as a patch; the script is at <link to patch_gf180.py once public>. Happy to open a PR.
+We apply exactly these two changes in our installer as a patch; the script is at https://github.com/ananthchellappa/klayout/blob/d86b04ed1/doc/claude/scripts/patch_gf180.py. Happy to open a PR.
 
 Separately, KLayout itself silently accepts a negative Python int as an unsigned array count. That may be worth raising with KLayout.
