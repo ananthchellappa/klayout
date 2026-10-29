@@ -23,7 +23,20 @@ source ~/pdk/gf180mcuD.env && klayout -e
   - `GF_PDK_OPTION=D`;
   - `KLAYOUT_PATH`;
   - `PATH` to include `bin-release`, because the PDK's DRC/LVS menu entries run `klayout -b` from PATH.
-- **One harmless startup warning:** the gdsfactory PCell library (`gf180mcu`) fails to load.
+- **The gdsfactory PCell library (`gf180mcu`) is skipped.** The installer patches the PDK's `pymacros/gf180mcu.lym` so that, without gdsfactory, it skips that library and prints a notice at every start instead of an error-like warning. See "The gdsfactory library" below.
+
+## The gdsfactory library
+
+The PDK ships two device PCell libraries. Compared by registered PCell names (pinned `fd_pr` commit):
+
+| | `gf180mcu_klayoutapi` (used) | `gf180mcu` (gdsfactory, skipped) |
+|---|---|---|
+| PCells | 31 | 29 |
+| Only here | `efuse`, `nfet_10v0_asym`, `pfet_10v0_asym` | `via_dev` (via stack) |
+
+So skipping it gives up only `via_dev`. That matters for the via rows/columns bindkeys in WO-008.
+
+**To get it back** (untested): install `gdsfactory~=7.9.4`, the version pinned in the PDK's `requirements.txt`, for the Python that KLayout embeds (3.14 in this build), then restart KLayout. The patched macro loads the library whenever `gdsfactory` is importable. Version 7.9 predates Python 3.14 and pulls in many dependencies, so it may not install cleanly. The alternative is to port `via_dev` to the KLayout API.
 
 ## Verification (`doc/claude/scripts/gf180_verify/run.sh`, all passing 2026-10-29)
 
