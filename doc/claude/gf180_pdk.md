@@ -34,7 +34,7 @@ source ~/pdk/gf180mcuD.env && klayout -e
   1. clamps all 26 counts at 0, so a too-small device draws without contacts and DRC flags it;
   2. raises the two diodes' defaults and form minimums to 3 × 3 µm.
 - **Why 3 × 3:** every contact row exists from 1.62 × 0.68 (`pw2dw`) and 2.62 × 1.68 (`dw2ps`), but below 3 µm DRC is clean only at some sizes, and not monotonically. From 3 to 10 µm, all 324 sizes tested (9 × 9 w/l values, both voltages, both diodes) are DRC-clean.
-- **Upstream:** issue draft in `doc/claude/upstream/gf180mcu_fd_pr_negative_contact_count.md`, not yet posted.
+- **Upstream:** reported as [fd_pr #51](https://github.com/fossi-foundation/globalfoundries-pdk-libs-gf180mcu_fd_pr/issues/51) (text in `doc/claude/upstream/`). Once fixed upstream, bump `PR_COMMIT` and drop the matching parts of `patch_gf180.py`; its checks fail loudly when the upstream text changes.
 - **Safety net:** the kit's `klayout` launcher (`doc/claude/kit/bin/klayout`) runs the GUI under a 10 GiB cgroup cap (`KLAYOUT_MEM` to change), so any future runaway kills KLayout, not WSL. Jobs that KLayout starts, such as the DRC/LVS menu runs, share that cap.
 
 ## The gdsfactory library

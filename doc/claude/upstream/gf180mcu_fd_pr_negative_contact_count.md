@@ -1,5 +1,5 @@
 <!--
-DRAFT for review, not yet posted.
+POSTED 2026-10-29 as https://github.com/fossi-foundation/globalfoundries-pdk-libs-gf180mcu_fd_pr/issues/51
 Target: https://github.com/fossi-foundation/globalfoundries-pdk-libs-gf180mcu_fd_pr/issues/new
 Post with:  gh issue create -R fossi-foundation/globalfoundries-pdk-libs-gf180mcu_fd_pr \
               --title "<title below>" --body-file <this file, without this comment>
