@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<salt-grain>
+ <name>layout_xl</name>
+ <version>0.1</version>
+ <title>Layout-XL kit (gf180mcuD)</title>
+ <doc>Cadence Virtuoso-style setup for KLayout: black background, f = Zoom Fit, Ctrl+F = toggle hierarchy display. Pairs with the gf180mcuD PDK installed by install.sh.</doc>
+ <doc-url/>
+ <url>https://github.com/ananthchellappa/klayout/tree/layout-xl/doc/claude/kit</url>
+ <license>GPLv3</license>
+ <author>Ananth Chellappa</author>
+ <author-contact/>
+ <authored-time/>
+ <installed-time/>
+ <icon/>
+ <screenshot/>
+</salt-grain>

@@ -5,12 +5,12 @@ Short findings so far. None of these has been started.
 ## Black background, Cadence-style, set once
 - GUI: File → Setup → Display → Background. Settings persist automatically in `~/.klayout/klayoutrc` (XML), so it's a one-time step.
 - Config key: `background-color` (`src/laybasic/laybasic/laybasicConfig.h:53`).
-- **To do:** keep it in a version-controlled init file instead. Use an autorun Python macro, e.g. `~/.klayout/pymacros/cadence_init.lym`, that calls `pya.MainWindow.instance().set_config("background-color", "#000000")`. The same file can set grid, colors and other options.
+- **Done** in the kit's startup package (`kit/layout_xl`), applied only while still at the default. Original idea: Use an autorun Python macro, e.g. `~/.klayout/pymacros/cadence_init.lym`, that calls `pya.MainWindow.instance().set_config("background-color", "#000000")`. The same file can set grid, colors and other options.
 
 ## Custom keyboard shortcuts in an init file
 - GUI: File → Setup → Application → Customize Menu. Saved as config key `key-bindings` in `klayoutrc`.
 - Script API: `MainWindow.set_key_bindings({"<menu path>": "Ctrl+A", ...})`, plus `get_key_bindings` and `get_default_key_bindings` (`src/lay/lay/gsiDeclLayMainWindow.cc:395-408`). Any menu action can be bound, including our own macros.
-- **To do:** a `cadence_keys` macro that applies a Virtuoso-style keymap at startup. That gives one file under version control, like the Xschem and Virtuoso init files. Map out which Virtuoso bindkeys have KLayout equivalents.
+- **Started:** the kit's startup package (`kit/layout_xl`) binds `f` (Zoom Fit) and Ctrl+F (hierarchy toggle). The plan for the user's 46 Virtuoso Layout bindkeys is `work_orders/WO-008_virtuoso_bindkeys.md`.
 
 ## Why the checkout is ~2 GB after building
 - `build-release/`: 1.2 GB. About 750 MB of it is object files, and `gsiqt` (the generated Qt bindings) alone is 470 MB. This is safe to delete, at the cost of incremental rebuilds.
@@ -28,6 +28,7 @@ Short findings so far. None of these has been started.
 - sky130A is the fallback: `sky130_pdk_plan.md`, WO-001 (not run).
 
 ## UI/UX work orders (plans, not started)
+- `work_orders/WO-008_virtuoso_bindkeys.md`: the user's Virtuoso Layout bindkeys, in 3 phases.
 - `work_orders/WO-005_command_journal.md`: CIW-style command log and journal file, replayable as Python.
 - `work_orders/WO-006_multi_window.md`: detach layout tabs into their own windows (multi-monitor) in one process.
 - `work_orders/WO-007_voice_commands.md`: voice for forms and precise geometry (Groups 1–2): preview card + ghost before anything runs, one undo step per command, local and cloud speech-to-text with failover, deterministic grammar parser.

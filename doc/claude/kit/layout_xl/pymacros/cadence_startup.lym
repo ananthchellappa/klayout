@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+ <description>Layout-XL kit: Cadence-style startup (black background, f = fit, Ctrl+F = hierarchy toggle)</description>
+ <version>0.1</version>
+ <category>pymacros</category>
+ <prolog/>
+ <epilog/>
+ <doc/>
+ <autorun>true</autorun>
+ <autorun-early>false</autorun-early>
+ <priority>0</priority>
+ <shortcut/>
+ <show-in-menu>false</show-in-menu>
+ <group-name/>
+ <menu-path/>
+ <interpreter>python</interpreter>
+ <dsl-interpreter-name/>
+ <text># Cadence Virtuoso-style startup for KLayout.
+#
+# Settings are applied only while they are still at KLayout's default, so this works
+# as a one-time setup: anything changed later in File > Setup is left alone.
+#
+#   background   black
+#   f            Zoom Fit (replaces F2)
+#   Ctrl+F       toggle all hierarchy levels / top level only (instances drawn as boxes),
+#                like Virtuoso's Ctrl+F / Shift+F
+#
+# Ctrl+F is a new entry in the View menu ("Toggle Hierarchy Display"), so it can be
+# rebound in File > Setup > Application > Customize Menu like any built-in command.
+
+import pya
+
+BACKGROUND = "#000000"
+KEYS = {"zoom_menu.zoom_fit": "F"}
+TOGGLE_HIER_KEY = "Ctrl+F"
+
+
+def _set_if_default(mw, name, value, default=""):
+  if mw.get_config(name) in (None, "", default):
+    mw.set_config(name, value)
+
+
+def _bind_if_default(mw, bindings):
+  current = mw.get_key_bindings()
+  defaults = mw.get_default_key_bindings()
+  changes = {path: key for path, key in bindings.items()
+             if current.get(path) == defaults.get(path)}
+  if changes:
+    mw.set_key_bindings(changes)
+
+
+def _toggle_hier():
+  view = pya.MainWindow.instance().current_view()
+  if view is None:
+    return
+  if view.max_hier_levels == 0:
+    view.max_hier()
+  else:
+    view.min_hier_levels = 0
+    view.max_hier_levels = 0
+
+
+def _install():
+  mw = pya.MainWindow.instance()
+  if mw is None:
+    return                                  # batch mode: no UI to configure
+
+  _set_if_default(mw, "background-color", BACKGROUND, default="auto")
+  _bind_if_default(mw, KEYS)
+
+  menu = mw.menu()
+  if not menu.is_valid("zoom_menu.layout_xl_toggle_hier"):
+    action = pya.Action()
+    action.title = "Toggle Hierarchy Display"
+    action.default_shortcut = TOGGLE_HIER_KEY
+    action.on_triggered += _toggle_hier
+    menu.insert_item("zoom_menu.inc_max_hier", "layout_xl_toggle_hier", action)
+    # keep a reference: the menu doesn't own Python-created actions
+    globals()["_layout_xl_toggle_hier_action"] = action
+
+
+_install()
+</text>
+</klayout-macro>
