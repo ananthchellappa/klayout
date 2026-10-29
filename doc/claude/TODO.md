@@ -29,4 +29,4 @@ Short findings so far. None of these has been started.
 ## UI/UX work orders (plans, not started)
 - `work_orders/WO-005_command_journal.md`: CIW-style command log and journal file, replayable as Python.
 - `work_orders/WO-006_multi_window.md`: detach layout tabs into their own windows (multi-monitor) in one process.
-- `work_orders/WO-007_voice_commands.md`: push-to-talk voice commands (offline Vosk helper process plus a KLayout macro/plugin), with a microphone consent prompt.
+- `work_orders/WO-007_voice_commands.md`: voice for forms and precise geometry (Groups 1–2): preview card + ghost before anything runs, one undo step per command, local and cloud speech-to-text with failover, deterministic grammar parser.
