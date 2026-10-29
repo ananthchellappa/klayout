@@ -23,8 +23,9 @@ Short findings so far. None of these has been started.
 - External: **KLayout-PEX (`kpex`)** from IIC-JKU (AUR package `klayout-pex`, 0.6.8, Oct 2026). It does R and C extraction on top of KLayout, with FasterCap, FastCap2 or Magic as optional backends. Its sky130 support and accuracy are **not yet verified**.
 - **To do:** evaluate kpex on sky130 against Magic `ext2spice`/`extresist` on the inverter.
 
-## sky130 PDK
-- See `sky130_pdk_plan.md`. This one is under review now.
+## PDK
+- **gf180mcuD is the working PDK** (2026-10-29): installed in `~/pdk` and verified. See `gf180_pdk.md` for results and quirks.
+- sky130A is the fallback: `sky130_pdk_plan.md`, WO-001 (not run).
 
 ## UI/UX work orders (plans, not started)
 - `work_orders/WO-005_command_journal.md`: CIW-style command log and journal file, replayable as Python.

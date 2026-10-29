@@ -1,0 +1,5 @@
+* nfet_03v3 W=1 L=0.28, in Xschem's lvs_format ("@name @pinlist @model L=@L W=@W nf=@nf m=@m").
+* The LVS deck extracts the p-substrate as a pin named SUB, so the bulk goes there.
+.subckt TOP SUB
+XM1 d g s SUB nfet_03v3 L=0.28u W=1u nf=1 m=1
+.ends
