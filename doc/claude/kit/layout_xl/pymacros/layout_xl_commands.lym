@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+ <description>Layout-XL kit: command box (run drc, flip vertical, metal 2, start wire min width, up to metal 4 using 2x2 vias) and gf180 vias</description>
+ <version>0.1</version>
+ <category>pymacros</category>
+ <prolog/>
+ <epilog/>
+ <doc/>
+ <autorun>true</autorun>
+ <autorun-early>false</autorun-early>
+ <priority>0</priority>
+ <shortcut/>
+ <show-in-menu>false</show-in-menu>
+ <group-name/>
+ <menu-path/>
+ <interpreter>python</interpreter>
+ <dsl-interpreter-name/>
+ <text># Registers the gf180mcu_vias library (vias for the wire tool's "O" / via up / via down)
+# and a "Layout XL" menu with "Command...": type a command such as
+#   run drc | flip vertical | metal 2 | start wire min width | up to metal 4 using 2x2 vias
+# The same dispatcher (layout_xl.commands) will take spoken commands.
+
+import pya
+from layout_xl import commands, vias
+
+vias.register()
+
+_last = [""]
+
+
+def _command():
+  mw = pya.MainWindow.instance()
+  text = pya.InputDialog.ask_string("Layout XL", "Command (e.g. run drc, metal 2, start wire min width):", _last[0])
+  if text is None:
+    return
+  _last[0] = text
+  name, args = commands.parse(text)
+  if name is None:
+    msg = args
+  else:
+    try:
+      msg = commands.execute(name, args)
+    except Exception as e:
+      msg = "%s failed: %s" % (name, e)
+  mw.message("Layout XL: " + msg, 8000)
+  print("layout_xl: %r -> %s" % (text, msg))
+
+
+def _install():
+  mw = pya.MainWindow.instance()
+  if mw is None:
+    return
+  menu = mw.menu()
+  if not menu.is_valid("layout_xl_menu"):
+    menu.insert_menu("help_menu", "layout_xl_menu", "Layout XL")
+  if not menu.is_valid("layout_xl_menu.command"):
+    action = pya.Action()
+    action.title = "Command..."
+    action.on_triggered += _command
+    menu.insert_item("layout_xl_menu.end", "command", action)
+    globals()["_layout_xl_command_action"] = action   # the menu doesn't own Python actions
+
+
+_install()
+</text>
+</klayout-macro>
