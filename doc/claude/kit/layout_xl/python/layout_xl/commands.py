@@ -1,7 +1,7 @@
 # Layout XL commands: short phrases that name an action, typed or (later) spoken.
 #
 #   run drc / launch lvs
-#   flip horizontal / flip vertical
+#   flip (horizontal by default) / flip vertical
 #   metal 2 / switch to met2 / layer poly
 #   start wire min width / route on metal 3 width 0.5
 #   up to metal 4 using 2x2 vias / via down / go up
@@ -78,6 +78,8 @@ def parse(text):
   m = re.search(r"\b(flip|mirror)\b.*\b(vertical|vertically|y)\b", t)
   if m:
     return "flip", {"axis": "v"}
+  if re.search(r"\b(flip|mirror)\b", t):      # no axis: horizontal (Virtuoso MY)
+    return "flip", {"axis": "h"}
 
   # via moves before wire/layer: "move up to metal 4 using 2x2 vias", "via down", "go up"
   m = re.search(r"\b(?:move |go |via |vias )?(?P<dir>up|down)\b(?: to " + _LAYER_RE + r")?", t)

@@ -17,7 +17,7 @@ source ~/pdk/gf180mcuD.env && klayout -e
   | Say or type | Does |
   |---|---|
   | `run drc`, `launch lvs` | runs the gf180mcu PDK's DRC / LVS on the saved layout; results open in the marker browser |
-  | `flip vertical`, `flip horizontal` | flips the selection (Virtuoso MX / MY) |
+  | `flip`, `flip vertical` | flips the selection: horizontally by default (Virtuoso MY), `vertical` for MX; `flip horizontal` also works |
   | `metal 2`, `switch to met3`, `poly`, `via 1` | makes that layer current, adding it to the layer list if missing |
   | `start wire min width`, `route on metal 3 width 0.5` | wire (path) tool at the layer's min width (M1 0.23, M2–M4 0.28, M5 0.44, poly 0.18) or the given width |
   | `up to metal 4 using 2x2 vias`, `via down`, `go up` | while drawing a wire: drops vias and continues on the new metal |
