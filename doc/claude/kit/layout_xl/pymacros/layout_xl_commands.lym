@@ -21,7 +21,7 @@
 # The same dispatcher (layout_xl.commands) will take spoken commands.
 
 import pya
-from layout_xl import commands, vias
+from layout_xl import commands, vias, voice
 
 vias.register()
 
@@ -59,6 +59,13 @@ def _install():
     action.on_triggered += _command
     menu.insert_item("layout_xl_menu.end", "command", action)
     globals()["_layout_xl_command_action"] = action   # the menu doesn't own Python actions
+  if not menu.is_valid("layout_xl_menu.voice"):
+    action = pya.Action()
+    action.title = "Voice Command (tap Ctrl+Shift)"
+    action.on_triggered += lambda: voice.install().tap()
+    menu.insert_item("layout_xl_menu.end", "voice", action)
+    globals()["_layout_xl_voice_action"] = action
+  voice.install()        # Ctrl+Shift tap; starts the recogniser if voice/setup.sh was run
 
 
 _install()

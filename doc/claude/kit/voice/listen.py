@@ -108,12 +108,7 @@ def from_mic(model, save=None):
 
 
 def show(text, conf):
-  # [unk] = a word outside the command vocabulary: something other than a command was
-  # said ("place nfet ..." comes out as "[unk] fit ..."), so don't act on the rest
-  if "[unk]" in text.split():
-    name, args = None, "not understood (words outside the command vocabulary)"
-  else:
-    name, args = commands.parse(text)
+  name, args = commands.parse_heard(text)
   print("  heard: %-45r conf %.2f -> %s %s" % (text, conf, name or "-", args))
   return name, args
 

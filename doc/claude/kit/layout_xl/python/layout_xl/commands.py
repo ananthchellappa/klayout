@@ -121,6 +121,15 @@ def parse(text):
   return None, "not a command: '%s'" % t
 
 
+def parse_heard(text):
+  # For recogniser output. "[unk]" = a word outside the command vocabulary: something
+  # other than a command was said ("place nfet ..." comes out as "[unk] fit ..."), so
+  # don't act on the rest.
+  if "[unk]" in text.split():
+    return None, "not understood (words outside the command vocabulary)"
+  return parse(text)
+
+
 # --- execution (inside KLayout) ----------------------------------------------
 
 def execute(name, args):

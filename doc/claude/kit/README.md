@@ -25,7 +25,11 @@ source ~/pdk/gf180mcuD.env && klayout -e
 
   Numbers can be words ("two by two", "zero point five").
 - **gf180mcu vias** (`gf180mcu_vias` library): Via1–Via4 for KLayout's wire tool. While drawing a wire, "O" (or the command above) drops a DRC-clean via array.
-- **Voice (spike, not wired into KLayout yet):** `voice/setup.sh` installs Vosk and its small English model under `~/.local/share/layout-xl`; `voice/listen.py --test` has you read the commands aloud and scores what the parser gets. Vocabulary is restricted to the command words, and an utterance containing any other word is rejected.
+- **Voice:** tap **Ctrl+Shift** (press both, release, no other key) with the KLayout window focused, say a command from the table, stop talking. The result shows in the status bar. Also Layout XL → Voice Command.
+  - One-time setup: `doc/claude/kit/voice/setup.sh` (Vosk + its small English model, 40 MB, offline, into `~/.local/share/layout-xl`). Without it, a tap just says so.
+  - The recogniser knows only the command words; an utterance with any other word in it is rejected, not guessed at.
+  - It runs in a helper process (`voice/server.py`); if that dies, the next tap restarts it. Log: `~/.local/share/layout-xl/voice-helper.log`.
+  - `voice/listen.py --test` reads the commands aloud outside KLayout and scores them.
 - **Planned:** the rest of the Virtuoso Layout bindkeys, see `../work_orders/WO-008_virtuoso_bindkeys.md`.
 
 Uninstall the startup package with `rm ~/.klayout/salt/layout_xl`.
