@@ -12,7 +12,10 @@ source ~/pdk/gf180mcuD.env && klayout -e
   - Ctrl+F: toggles all hierarchy levels / top level only. It's Display → Toggle Hierarchy Display.
 
   Each setting is applied only while it's still at KLayout's default, so later changes in File → Setup stick.
-- **Commands** (Layout XL → Command…): short phrases that name an action. Voice will feed the same dispatcher (`layout_xl/python/layout_xl/commands.py`).
+- **Command palette: Ctrl+Shift+P** (Layout XL → Command Palette). One searchable list of the Layout XL commands (with the phrase that says each one) and every KLayout menu action (with its shortcut). Type words to filter, arrows to move, Enter to run; your last five come first.
+  - Type a whole command ("up to metal 4 using 2x2 vias") and it is offered as the first row.
+  - Features that need something installed are listed greyed, with what to install (voice, LVS's netlist, the gdsfactory via stack).
+- **Commands:** short phrases that name an action, the same grammar typed or spoken (`layout_xl/python/layout_xl/commands.py`).
 
   | Say or type | Does |
   |---|---|
