@@ -11,7 +11,7 @@
 import time
 import pya
 
-TAP_MAX_S = 0.6
+TAP_MAX_S = 1.0          # measured taps: 480-580 ms
 NAMES = {pya.Qt.Key_Control.to_i(): "Ctrl", pya.Qt.Key_Shift.to_i(): "Shift",
          pya.Qt.Key_Alt.to_i(): "Alt", pya.Qt.Key_Meta.to_i(): "Meta",
          pya.Qt.Key_Super_L.to_i(): "Super_L", pya.Qt.Key_Super_R.to_i(): "Super_R"}

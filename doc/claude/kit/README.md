@@ -25,6 +25,7 @@ source ~/pdk/gf180mcuD.env && klayout -e
 
   Numbers can be words ("two by two", "zero point five").
 - **gf180mcu vias** (`gf180mcu_vias` library): Via1–Via4 for KLayout's wire tool. While drawing a wire, "O" (or the command above) drops a DRC-clean via array.
+- **Voice (spike, not wired into KLayout yet):** `voice/setup.sh` installs Vosk and its small English model under `~/.local/share/layout-xl`; `voice/listen.py --test` has you read the commands aloud and scores what the parser gets. Vocabulary is restricted to the command words, and an utterance containing any other word is rejected.
 - **Planned:** the rest of the Virtuoso Layout bindkeys, see `../work_orders/WO-008_virtuoso_bindkeys.md`.
 
 Uninstall the startup package with `rm ~/.klayout/salt/layout_xl`.
