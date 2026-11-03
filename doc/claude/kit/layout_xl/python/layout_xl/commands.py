@@ -38,6 +38,9 @@ def normalize(text):
   t = re.sub(r"(\d) \. (\d)", r"\1.\2", t)          # "0 . 5" -> "0.5"
   t = re.sub(r"\b\. (\d)", r".\1", t)
   t = re.sub(r"(\d) ?(?:by|x) ?(\d)", r"\1x\2", t)   # "2 by 2" -> "2x2"
+  # "to" and "two" sound the same: "switch two metal three", "up two metal four".
+  # A bare 2 right before a layer word can only be "to".
+  t = re.sub(r"(?<![\d.x])\b2 (?=(?:metal|met|via|poly|comp|active|contact|cont|layer)\b)", "to ", t)
   t = re.sub(r"\.(?!\d)", " ", t)                    # sentence-final dots
   return " ".join(t.split())
 
