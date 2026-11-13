@@ -35,4 +35,6 @@ source ~/pdk/gf180mcuD.env && klayout -e
   - `voice/listen.py --test` reads the commands aloud outside KLayout and scores them.
 - **Planned:** the rest of the Virtuoso Layout bindkeys, see `../work_orders/WO-008_virtuoso_bindkeys.md`.
 
+Tests: `python3 -I layout_xl/tests/test_commands.py` (grammar) and `layout_xl/tests/gui/run_gui_tests.sh` (palette and voice in hidden-window KLayout, with the recordings from `voice/listen.py --test`).
+
 Uninstall the startup package with `rm ~/.klayout/salt/layout_xl`.
