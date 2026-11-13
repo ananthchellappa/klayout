@@ -446,6 +446,26 @@ static void _call_f_setButtonText_4436 (const qt_gsi::GenericMethod * /*decl*/, 
 }
 
 
+// void QWizard::setCurrentId(int id)
+
+
+static void _init_f_setCurrentId_767 (qt_gsi::GenericMethod *decl)
+{
+  static gsi::ArgSpecBase argspec_0 ("id");
+  decl->add_arg<int > (argspec_0);
+  decl->set_return<void > ();
+}
+
+static void _call_f_setCurrentId_767 (const qt_gsi::GenericMethod * /*decl*/, void *cls, gsi::SerialArgs &args, gsi::SerialArgs &ret) 
+{
+  __SUPPRESS_UNUSED_WARNING(args);
+  tl::Heap heap;
+  int arg1 = gsi::arg_reader<int >() (args, heap);
+  __SUPPRESS_UNUSED_WARNING(ret);
+  ((QWizard *)cls)->setCurrentId (arg1);
+}
+
+
 // void QWizard::setDefaultProperty(const char *className, const char *property, const char *changedSignal)
 
 
@@ -893,6 +913,7 @@ static gsi::Methods methods_QWizard () {
   methods += new qt_gsi::GenericMethod ("setButton", "@brief Method void QWizard::setButton(QWizard::WizardButton which, QAbstractButton *button)\n", false, &_init_f_setButton_4570, &_call_f_setButton_4570);
   methods += new qt_gsi::GenericMethod ("setButtonLayout", "@brief Method void QWizard::setButtonLayout(const QList<QWizard::WizardButton> &layout)\n", false, &_init_f_setButtonLayout_4011, &_call_f_setButtonLayout_4011);
   methods += new qt_gsi::GenericMethod ("setButtonText", "@brief Method void QWizard::setButtonText(QWizard::WizardButton which, const QString &text)\n", false, &_init_f_setButtonText_4436, &_call_f_setButtonText_4436);
+  methods += new qt_gsi::GenericMethod ("setCurrentId", "@brief Method void QWizard::setCurrentId(int id)\n", false, &_init_f_setCurrentId_767, &_call_f_setCurrentId_767);
   methods += new qt_gsi::GenericMethod ("setDefaultProperty", "@brief Method void QWizard::setDefaultProperty(const char *className, const char *property, const char *changedSignal)\n", false, &_init_f_setDefaultProperty_4977, &_call_f_setDefaultProperty_4977);
   methods += new qt_gsi::GenericMethod ("setField", "@brief Method void QWizard::setField(const QString &name, const QVariant &value)\n", false, &_init_f_setField_4036, &_call_f_setField_4036);
   methods += new qt_gsi::GenericMethod ("setOption", "@brief Method void QWizard::setOption(QWizard::WizardOption option, bool on)\n", false, &_init_f_setOption_3272, &_call_f_setOption_3272);

@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Read and follow AGENTS.md before suggesting an issue or a pull request.
+
+@AGENTS.md
+
 KLayout is a C++/Qt layout viewer and editor for IC mask layouts (GDS2, OASIS, etc.), with Ruby and Python scripting, DRC/LVS engines, and a standalone Python module (`klayout` on PyPI).
 
 ## Build

@@ -2017,6 +2017,25 @@ static void _call_f_fromRgba64_1003 (const qt_gsi::GenericStaticMethod * /*decl*
 }
 
 
+// static QColor QColor::fromString(QAnyStringView name)
+
+
+static void _init_f_fromString_1855 (qt_gsi::GenericStaticMethod *decl)
+{
+  static gsi::ArgSpecBase argspec_0 ("name");
+  decl->add_arg<QAnyStringView > (argspec_0);
+  decl->set_return<QColor > ();
+}
+
+static void _call_f_fromString_1855 (const qt_gsi::GenericStaticMethod * /*decl*/, gsi::SerialArgs &args, gsi::SerialArgs &ret) 
+{
+  __SUPPRESS_UNUSED_WARNING(args);
+  tl::Heap heap;
+  QAnyStringView arg1 = gsi::arg_reader<QAnyStringView >() (args, heap);
+  ret.write<QColor > ((QColor)QColor::fromString (arg1));
+}
+
+
 // static bool QColor::isValidColor(const QString &name)
 
 
@@ -2033,6 +2052,25 @@ static void _call_f_isValidColor_2025 (const qt_gsi::GenericStaticMethod * /*dec
   tl::Heap heap;
   const QString &arg1 = gsi::arg_reader<const QString & >() (args, heap);
   ret.write<bool > ((bool)QColor::isValidColor (arg1));
+}
+
+
+// static bool QColor::isValidColorName(QAnyStringView)
+
+
+static void _init_f_isValidColorName_1855 (qt_gsi::GenericStaticMethod *decl)
+{
+  static gsi::ArgSpecBase argspec_0 ("arg1");
+  decl->add_arg<QAnyStringView > (argspec_0);
+  decl->set_return<bool > ();
+}
+
+static void _call_f_isValidColorName_1855 (const qt_gsi::GenericStaticMethod * /*decl*/, gsi::SerialArgs &args, gsi::SerialArgs &ret) 
+{
+  __SUPPRESS_UNUSED_WARNING(args);
+  tl::Heap heap;
+  QAnyStringView arg1 = gsi::arg_reader<QAnyStringView >() (args, heap);
+  ret.write<bool > ((bool)QColor::isValidColorName (arg1));
 }
 
 
@@ -2140,7 +2178,9 @@ static gsi::Methods methods_QColor () {
   methods += new qt_gsi::GenericStaticMethod ("fromRgba", "@brief Static method QColor QColor::fromRgba(unsigned int rgba)\nThis method is static and can be called without an instance.", &_init_f_fromRgba_1772, &_call_f_fromRgba_1772);
   methods += new qt_gsi::GenericStaticMethod ("fromRgba64", "@brief Static method QColor QColor::fromRgba64(unsigned short int r, unsigned short int g, unsigned short int b, unsigned short int a)\nThis method is static and can be called without an instance.", &_init_f_fromRgba64_9580, &_call_f_fromRgba64_9580);
   methods += new qt_gsi::GenericStaticMethod ("fromRgba64", "@brief Static method QColor QColor::fromRgba64(QRgba64 rgba)\nThis method is static and can be called without an instance.", &_init_f_fromRgba64_1003, &_call_f_fromRgba64_1003);
+  methods += new qt_gsi::GenericStaticMethod ("fromString", "@brief Static method QColor QColor::fromString(QAnyStringView name)\nThis method is static and can be called without an instance.", &_init_f_fromString_1855, &_call_f_fromString_1855);
   methods += new qt_gsi::GenericStaticMethod ("isValidColor?", "@brief Static method bool QColor::isValidColor(const QString &name)\nThis method is static and can be called without an instance.", &_init_f_isValidColor_2025, &_call_f_isValidColor_2025);
+  methods += new qt_gsi::GenericStaticMethod ("isValidColorName?", "@brief Static method bool QColor::isValidColorName(QAnyStringView)\nThis method is static and can be called without an instance.", &_init_f_isValidColorName_1855, &_call_f_isValidColorName_1855);
   return methods;
 }
 

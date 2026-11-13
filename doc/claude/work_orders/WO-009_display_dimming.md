@@ -75,5 +75,5 @@ Do this if markers turn out too slow for big nets, or the stacking order or fill
 
 - Add a **focus set** to `lay::LayoutViewBase`: a set of shapes or instance paths. When it isn't empty, draw everything at the context-dimmed brightness, then draw the focus shapes at full brightness in a second pass. That reuses the existing brightness calculation near `layLayoutViewBase.cc:4308`.
 - Expose it through GSI (`LayoutView.set_focus`, `clear_focus`) so the kit's Phase 1 commands switch over without changing their interface.
-- Offer it upstream to KLayout as a general feature (useful for net tracing too). Follow the code conventions in `CLAUDE.md` and add a unit test in `src/laybasic/unit_tests/`.
+- **Upstream: a feature request first, not code.** `AGENTS.md` (upstream, 2026-11) asks for feature requests that describe the problem and the workflow, not the implementation, and no pull request unless the maintainer asks for one. So: the user files an issue describing the dimming workflow (what they do in Virtuoso, why Descend's context dimming doesn't cover nets or the selection). Build the C++ only in our fork, or once upstream agrees. If it is built: follow the code conventions in `CLAUDE.md`, add a unit test in `src/laybasic/unit_tests/`.
 - Effort: about a week, plus upstream review.
